@@ -1,0 +1,39 @@
+# Need to make a bot for the casino that has these features:
+
+# Imagery
+#   + Need to be able to store a single image or series of same size images to load for text ticket placement and other things from commands
+#   + Image needs to be imported as a png, and exported as a png
+#   + Add text to a certain portion of the screen
+#   + Export the png (add imgur automation later)
+
+
+# Generations
+#   + Receive a simple math.rand for different probabilites
+#   + display probabilities, and allow halving / sessions
+
+
+
+# Data for players involved
+#   + Store coins to buy tickets
+#   + Store money information on spent
+#   + Store prize money cash out amount
+#   + Store tickets owned and for when
+#   + Store name
+#   + Display a nice gui panel?
+#   + Show odds based on ticket purchase counts
+
+
+
+
+# Currency, odds, and lottery
+#   + Money in city pays for the tickets
+#   + Small lottery --> (1/n)^3     
+#   + Medium lottery --> (1/n)^4 * (1/n)
+#   + Large lottery --> (1/(n/2))^5 * (1/n)
+
+
+# Messaging and information
+
+
+
+# general-commands

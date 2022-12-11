@@ -1,2 +1,2 @@
-# leroythecasinobot
-Bot made for a GTA V server to host a lottery and set of other functions.
+# leroycasinobot
+Bot made for a visual discord casino experience. The original project surrounds a game of blackjack.

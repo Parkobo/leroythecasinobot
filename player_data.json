@@ -1,0 +1,28 @@
+{
+  "players": [
+      {
+          "Player Name": "Test Player 1",
+          "UID": 0,
+          "Tokens": 0,
+          "Wins": 0,
+          "Powerplays": 0,
+          "Money Spent": 0,
+          "Tickets Owned": 0,
+          "Lotteries Participated": 0
+      },
+      {
+          "Player Name": "Test Player 2",
+          "UID": 0,
+          "Tokens": 0,
+          "Wins": 0,
+          "Powerplays": 0,
+          "Money Spent": 0,
+          "Tickets Owned": 0,
+          "Lotteries Participated": 0
+      }
+  ],
+  "jackpot": {
+      "Current Jackpot": 0,
+      "Next Drawing": "2022-12-31"
+  }
+}

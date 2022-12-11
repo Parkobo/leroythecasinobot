@@ -1,0 +1,11 @@
+{
+"lottery": {
+    "Starting Jackpot": 0,
+    "Current Jackpot": 0,
+    "Next Lottery": null,
+    "Lotteries So Far": 0,
+    "Lifetime Profit": 0,
+    "Decay Rate": null,
+    "Sponsorships": []
+  }
+}

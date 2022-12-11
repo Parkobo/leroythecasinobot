@@ -4,7 +4,7 @@ from discord.ext.commands import Bot
 import logging
 import dotenv
 from pymongo import MongoClient
-
+#
 # Make a new bot called bot, all permissions allowed
 bot = Bot(intents=discord.Intents.all())
 

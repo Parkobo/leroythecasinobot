@@ -7,6 +7,7 @@ bot = Bot(intents=discord.Intents.all())
 # await interaction.response.edit_message(content="hello there", view=None)
 # await interaction.followup.send("Hi!")
 
+
 # ( + ) Lottery Shop Buttons ( + ) #
 class BuyTicketButton(Button):
     def __init__(self, *args, _row, _label, **kwargs):

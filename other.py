@@ -197,3 +197,34 @@ bot_utilities.update_records(record_file)
         await ingame_channels[ctx.message.channel.id].game_loop(ctx)
         await self.bot.say('Thanks for playing!')
         del ingame_channels[ctx.message.channel.id]
+
+
+        ######################## Buttons old
+        # ( + ) Lottery Shop Buttons ( + ) #
+class BuyTicketMenu(Select):
+    def __init__(self, *args, _row, _label, _custom_id, **kwargs):
+        label =_label
+        emoji ="🎟️"
+        row =_row
+        style = discord.ButtonStyle.green
+        custom_id=_custom_id
+        
+        super().__init__(*args, label=label, emoji=emoji, style=style, row=row, custom_id=custom_id, **kwargs)
+
+    async def callback(self, interaction: discord.Interaction):
+        pass
+        # Functionality for subtracting money and adding a ticket to p_db_object
+
+class BuyPowerUpMenu(Select):
+    def __init__(self, *args, _row, _label, _custom_id, **kwargs):
+        label=_label
+        emoji="🧧"
+        row =_row
+        style=discord.ButtonStyle.blurple
+        custom_id=_custom_id
+        
+        super().__init__(*args, label=label, emoji=emoji, style=style, row=row, custom_id=custom_id, **kwargs)
+
+    async def callback(self, interaction: discord.Interaction):
+        pass
+        # Functionality for subtracting money and adding a powerup token to p_db_object

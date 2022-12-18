@@ -5,7 +5,7 @@ from nextcord.ext.commands import Cog
 
 intents = nextcord.Intents.all()
 intents.message_content = True
-bot = commands.Bot(command_prefix=">", intents=intents)
+bot = commands.Bot(intents=intents)
 
 class UserActions(Cog): # Create a class for our cog that inherits from commands.Cog -- Admin Commands
 

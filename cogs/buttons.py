@@ -1,29 +1,24 @@
 import nextcord
 from nextcord import Interaction
 from . import modals as m
-from nextcord.ui import Button, View
+from nextcord.ui import Button
 from . import admin as a
-from nextcord.ext.commands import Cog
 
 # ( + ) Lottery Shop Modal Stuff ( + ) #
 class CheckerButton(Button):
-    async def button_callback(self, button, interaction):
-        await interaction.response.send_modal(m.BuyModal(title="Buy Items"))
-        
-# ( + ) Main Menu Buttons ( + ) # 
-class OpenStatsButton(Button):
     def __init__(self: Button, *args, cog, pass_row, **kwargs):
-        label = "My Stats"
-        emoji = "📚"
-        style = nextcord.ButtonStyle.blurple
+        label = "Purchase Items"
+        emoji = "🛒"
+        style = nextcord.ButtonStyle.green
         row = pass_row
         self.cog = cog
-
+        
         super().__init__(*args, label=label, emoji=emoji, style=style, row=row, **kwargs)
 
-    async def button_callback(self, interaction: Interaction):
-        pass
-
+    async def callback(self, interaction: Interaction):
+        await self.cog.purchase()
+        
+# ( + ) Main Menu Buttons ( + ) # 
 class OpenShopButton(Button):
     def __init__(self: Button, *args, cog, pass_row, **kwargs):
         label = "Ticket Shop"
@@ -37,6 +32,19 @@ class OpenShopButton(Button):
     async def callback(self, interaction: Interaction):
         await self.cog.shop()
 
+class OpenStatsButton(Button):
+    def __init__(self: Button, *args, cog, pass_row, **kwargs):
+        label = "My Stats"
+        emoji = "📚"
+        style = nextcord.ButtonStyle.blurple
+        row = pass_row
+        self.cog = cog
+
+        super().__init__(*args, label=label, emoji=emoji, style=style, row=row, **kwargs)
+
+    async def callback(self, interaction: Interaction):
+        await self.cog.stats()
+
 class OpenSettingsButton(Button):
     def __init__(self: Button, *args, cog, pass_row, **kwargs):
         label = "Settings"
@@ -47,8 +55,8 @@ class OpenSettingsButton(Button):
         
         super().__init__(*args, label=label, emoji=emoji, style=style, row=row, **kwargs)
 
-    async def button_callback(self, interaction: Interaction):
-        pass
+    async def callback(self, interaction: Interaction):
+        await self.cog.settings()
 
 class OpenMainMenuButton(Button):
     def __init__(self: Button, *args, cog, pass_row, **kwargs):
@@ -60,8 +68,8 @@ class OpenMainMenuButton(Button):
         
         super().__init__(*args, label=label, emoji=emoji, style=style, row=row, **kwargs)
 
-    async def button_callback(self, interaction: Interaction):
-        await interaction.response.defer()
+    async def callback(self, interaction: Interaction):
+        await self.cog.main_window()
 
 class QuitButton(Button):
     def __init__(self: Button, *args, cog, pass_row, **kwargs):
@@ -73,12 +81,12 @@ class QuitButton(Button):
         
         super().__init__(*args, label=label, emoji=emoji, style=style, row=row, **kwargs)
 
-    async def button_callback(self, interaction: Interaction):
-        pass
+    async def callback(self, interaction: Interaction):
+        await self.cog.quit()
 
 class BuyTicketButton(Button):
-    def __init__(self: Button, *args, cog, pass_row, label, **kwargs):
-        label = label
+    def __init__(self: Button, *args, cog, pass_row, **kwargs):
+        label = "Quick Buy 1"
         emoji = "🎟️"
         style = nextcord.ButtonStyle.green
         row = pass_row
@@ -87,18 +95,32 @@ class BuyTicketButton(Button):
         super().__init__(*args, label=label, emoji=emoji, style=style, row=row, **kwargs)
 
     async def callback(self, interaction: Interaction):
-        pass
+        await self.cog.buy_ticket()
 
 # ( + ) Player Settings Buttons ( + ) #
 class EditPlayerNameButton(Button):
-    def __init__(self, row):
-        super().__init__(label="Edit Profile Name", row=row, style=nextcord.ButtonStyle.green, emoji="✏️")
+    def __init__(self: Button, *args, cog, pass_row, **kwargs):
+        label = "Edit Name"
+        emoji = "📋"
+        style = nextcord.ButtonStyle.gray
+        row = pass_row
+        self.cog = cog
+        
+        super().__init__(*args, label=label, emoji=emoji, style=style, row=row, **kwargs)
 
-    async def callback(self, interaction: nextcord.Interaction):
-        pass
-        # Functionality for player editing their name in the db
+    async def callback(self, interaction: Interaction):
+        await self.cog.edit_name()
 
 # ( + ) Player Stats Button ( + ) #
-class DownloadPlayerStats(Button):
-    pass
-    # Functionality for allowing players to get a file downloaded for them with their stats
+class DownloadPlayerStatsButton(Button):
+    def __init__(self: Button, *args, cog, pass_row, **kwargs):
+        label = "Download"
+        emoji = "📋"
+        style = nextcord.ButtonStyle.green
+        row = pass_row
+        self.cog = cog
+        
+        super().__init__(*args, label=label, emoji=emoji, style=style, row=row, **kwargs)
+
+    async def callback(self, interaction: Interaction):
+        await self.cog.download()

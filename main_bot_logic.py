@@ -7,7 +7,7 @@ from nextcord.ext import commands
 # Make a new bot called bot, all permissions allowed
 intents = nextcord.Intents.all()
 intents.message_content = True
-bot = commands.Bot(command_prefix=">", intents=intents)
+bot = commands.Bot(intents=intents)
 
 # Load the credentials from the local .env file
 dotenv.load_dotenv("secrets.env")

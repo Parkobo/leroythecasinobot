@@ -36,12 +36,10 @@ class OpenShopButton(Button):
         super().__init__(*args, label=label, emoji=emoji, style=style, row=row, custom_id=custom_id, **kwargs)
 
     async def button_callback(self, interaction: Interaction):
-        # self.local_view.clear_items()
-        # await self.msg.response.edit_message(content="** **", embed=None, view=None)
+        self.local_view.clear_items()
+        await self.msg.response.edit_message(content="** **", embed=None, view=None)
         a.AdminCommands(pass_msg=interaction).shop()
         self.local_view.stop()
-        self.msg.user
-        self.local_view.clear_items
 
 class OpenSettingsButton(Button):
     def __init__(self, *args, _row, **kwargs):

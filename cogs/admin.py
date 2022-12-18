@@ -1,4 +1,5 @@
 from nextcord import Colour, Embed, Interaction
+from nextcord.ui import View
 from . import buttons as b
 from . import views as v
 from . import modals as m
@@ -9,21 +10,22 @@ import nextcord
 
 intents = nextcord.Intents.all()
 intents.message_content = True
-bot = commands.Bot(command_prefix=">", intents=intents)
+bot = commands.Bot(intents=intents)
 
 class AdminCommands(Cog):
-    def __init__(self, bot, pass_msg: Interaction):
+    def __init__(self, bot, interaction: Interaction):
         self.bot = bot
-        self.msg = pass_msg
+        self.interaction = interaction
 
     @bot.slash_command(description="Open the lottery application.")
-    async def main_menu(self, message: Interaction):
-        member = message.user
+    async def main_menu(self, interaction: Interaction):
+        self.interaction = interaction
+        member = interaction.user
         name = member.display_name
         pfp = member.display_avatar
         view = v.MainMenu()
         buttons = {
-        b.OpenShopButton(pass_row=0, pass_view=view, pass_msg=message),
+        b.OpenShopButton(cog=self, pass_row=0, pass_interaction=interaction),
         b.OpenStatsButton(_row=0), 
         b.OpenSettingsButton(_row=0),
         b.BuyTicketButton(_row=1, _label="Quick Buy 1", _custom_id="buy-one-ticket"),
@@ -38,17 +40,16 @@ class AdminCommands(Cog):
         for button in buttons:
             view.add_item(button)
 
-        msg = await message.send(embed=embed, view=view)
+        msg = await interaction.response.send_message(embed=embed, view=view)
         res = await view.wait()
         if res:
             await msg.delete()
-            
-    @bot.command(hidden=True)
-    async def shop(self, message: Interaction):
-        member = message.user
+
+    async def shop(self):
+        member = self.interaction.user
         name = member.display_name
         pfp = member.display_avatar
-        view = v.ShopMenu(pass_msg=message)
+        view = v.ShopMenu()
         buttons = {
         b.BuyTicketButton(_row=0, _label="Buy 1", _custom_id="buy-one-ticket"),
         b.OpenMainMenuButton(_row=2)
@@ -61,10 +62,7 @@ class AdminCommands(Cog):
 
         for button in buttons:
             view.add_item(button)
-        msg = await message.send(embed=embed, view=view)
-        res = await view.wait()
-        if res:
-            msg.edit(embed=None, view=None)
+        await self.interaction.edit_original_message(embed=embed, view=view)
 
 def setup(bot): # this is called by Pycord to setup the cog
-    bot.add_cog(AdminCommands(bot, None)) # add the cog to the bot
+    bot.add_cog(AdminCommands(bot, interaction=None)) # add the cog to the bot

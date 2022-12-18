@@ -3,6 +3,7 @@ from nextcord import Interaction
 from . import modals as m
 from nextcord.ui import Button, View
 from . import admin as a
+from nextcord.ext.commands import Cog
 
 # ( + ) Lottery Shop Modal Stuff ( + ) #
 class CheckerButton(Button):
@@ -24,22 +25,19 @@ class OpenStatsButton(Button):
         pass
 
 class OpenShopButton(Button):
-    def __init__(self: Button, *args, pass_view: View, pass_msg: Interaction, pass_row, **kwargs):
+    def __init__(self: Button, *args, cog, pass_row, pass_interaction: Interaction, **kwargs):
         label="Ticket Shop"
         emoji="🏪"
         style=nextcord.ButtonStyle.green
         custom_id="open-shop"
         row=pass_row
-        self.msg=pass_msg
-        self.local_view=pass_view
-                
+        self.cog=cog
+        self.interact = pass_interaction
+
         super().__init__(*args, label=label, emoji=emoji, style=style, row=row, custom_id=custom_id, **kwargs)
 
-    async def button_callback(self, interaction: Interaction):
-        self.local_view.clear_items()
-        await self.msg.response.edit_message(content="** **", embed=None, view=None)
-        a.AdminCommands(pass_msg=interaction).shop()
-        self.local_view.stop()
+    async def callback(self, interaction: Interaction):
+        await self.cog.shop()
 
 class OpenSettingsButton(Button):
     def __init__(self, *args, _row, **kwargs):

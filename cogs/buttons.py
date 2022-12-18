@@ -40,7 +40,6 @@ class OpenShopButton(Button):
         # await self.msg.response.edit_message(content="** **", embed=None, view=None)
         a.AdminCommands(pass_msg=interaction).shop()
         self.local_view.stop()
-        print('CUNT')
         self.msg.user
         self.local_view.clear_items
 

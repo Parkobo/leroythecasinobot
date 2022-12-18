@@ -1,6 +1,7 @@
 from datetime import datetime as dt
-from discord import ApplicationContext as AppCtx
 from pymongo import MongoClient
+import nextcord
+from nextcord import Interaction
 import dotenv
 import os
 
@@ -21,11 +22,11 @@ player_data = db.player_data
 admin_data = db.admin_data
 
 # Create. Read. Update. Delete. #
-async def create_player(ctx: AppCtx):
-    d_id = ctx.author.id
+async def create_player(pass_msg: Interaction):
+    d_id = pass_msg.user.id
     check_d_id = player_data.find_one( { "Discord ID": d_id } )
     if check_d_id is None:
-        p_na = ctx.author.name
+        p_na = pass_msg.user.display_name
         date = dt.now()
         player_data.insert_one(
             {
@@ -62,10 +63,10 @@ async def create_player(ctx: AppCtx):
                 # The exact date and time of the player registering their account -- in case they leave or need records for something like logging
                 "Joined": date,
         })
-        await ctx.send_response(f"You have been registered successfully, {ctx.author.name}!")
+        await pass_msg.send(f"You have registered your account named *{p_na}* successfully, <@{d_id}>!")
         return True
     else:
-        await ctx.send_response(f'**You already have an account <@{ctx.author.id}> !**')
+        await pass_msg.send(f'**You already have an account <@{d_id}> !**')
     return False
 
 def read_player():

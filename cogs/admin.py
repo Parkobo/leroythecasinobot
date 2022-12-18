@@ -1,25 +1,29 @@
-from discord import Cog, ApplicationContext as AppCtx, Colour, Embed
+from nextcord import Colour, Embed, Interaction
 from . import buttons as b
 from . import views as v
 from . import modals as m
 from main_bot_logic import bot
-from discord.ext.commands import Bot
-import discord
+from nextcord.ext import commands
+from nextcord.ext.commands import Cog
+import nextcord
 
-bot = Bot(intents=discord.Intents.all())
+intents = nextcord.Intents.all()
+intents.message_content = True
+bot = commands.Bot(command_prefix=">", intents=intents)
 
-class AdminCommands(Cog): # create a class for our cog that inherits from commands.Cog -- Admin Commands
-    def __init__(self, bot): # This is a special method that is called when the cog is loaded
+class AdminCommands(Cog):
+    def __init__(self, bot, pass_msg: Interaction):
         self.bot = bot
+        self.msg = pass_msg
 
-    @bot.slash_command()
-    async def main_menu(self, ctx: AppCtx):
-        member = ctx.author
+    @bot.slash_command(description="Open the lottery application.")
+    async def main_menu(self, message: Interaction):
+        member = message.user
         name = member.display_name
         pfp = member.display_avatar
-        view = v.MainMenu(ctx=ctx)
+        view = v.MainMenu()
         buttons = {
-        b.OpenShopButton(_row=0),
+        b.OpenShopButton(pass_row=0, pass_view=view, pass_msg=message),
         b.OpenStatsButton(_row=0), 
         b.OpenSettingsButton(_row=0),
         b.BuyTicketButton(_row=1, _label="Quick Buy 1", _custom_id="buy-one-ticket"),
@@ -34,18 +38,17 @@ class AdminCommands(Cog): # create a class for our cog that inherits from comman
         for button in buttons:
             view.add_item(button)
 
-        msg = await ctx.send_response(embed=embed, view=view)
+        msg = await message.send(embed=embed, view=view)
         res = await view.wait()
         if res:
-            await msg.delete_original_response()
+            await msg.delete()
             
-
     @bot.command(hidden=True)
-    async def shop(self, ctx: AppCtx):
-        member = ctx.author
+    async def shop(self, message: Interaction):
+        member = message.user
         name = member.display_name
         pfp = member.display_avatar
-        view = v.ShopMenu(ctx=ctx)
+        view = v.ShopMenu(pass_msg=message)
         buttons = {
         b.BuyTicketButton(_row=0, _label="Buy 1", _custom_id="buy-one-ticket"),
         b.OpenMainMenuButton(_row=2)
@@ -58,10 +61,10 @@ class AdminCommands(Cog): # create a class for our cog that inherits from comman
 
         for button in buttons:
             view.add_item(button)
-        msg = await ctx.send_response(embed=embed, view=view)
+        msg = await message.send(embed=embed, view=view)
         res = await view.wait()
         if res:
             msg.edit(embed=None, view=None)
 
 def setup(bot): # this is called by Pycord to setup the cog
-    bot.add_cog(AdminCommands(bot)) # add the cog to the bot
+    bot.add_cog(AdminCommands(bot, None)) # add the cog to the bot

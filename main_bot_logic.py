@@ -1,11 +1,13 @@
 import os
-import discord
-from discord.ext.commands import Bot
+import nextcord
 import logging
 import dotenv
+from nextcord.ext import commands
 
 # Make a new bot called bot, all permissions allowed
-bot = Bot(intents=discord.Intents.all())
+intents = nextcord.Intents.all()
+intents.message_content = True
+bot = commands.Bot(command_prefix=">", intents=intents)
 
 # Load the credentials from the local .env file
 dotenv.load_dotenv("secrets.env")
@@ -25,8 +27,7 @@ cogs_list = [
 ]
 
 # Add them to the bot
-for cog in cogs_list:
-    bot.load_extension(cog)
+bot.load_extensions(cogs_list)
 
 # Print in console lets us know the bot has successfully made it alive to our server
 @bot.event

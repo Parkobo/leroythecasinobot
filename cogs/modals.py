@@ -1,6 +1,6 @@
-import discord
+import nextcord
 import data_methods as crud
-from discord.ui import Modal, InputText as TxtBx
+from nextcord.ui import TextInput, Modal
 
 # class BuyModal(Modal, title='<*> I T E M - S H O P <*>'):
 #     def __init__(self, *args, **kwargs):

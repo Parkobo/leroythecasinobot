@@ -1,5 +1,4 @@
 from nextcord import Colour, Embed, Interaction
-from nextcord.ui import View
 from . import buttons as b
 from . import views as v
 from . import modals as m
@@ -25,11 +24,11 @@ class AdminCommands(Cog):
         pfp = member.display_avatar
         view = v.MainMenu()
         buttons = {
-        b.OpenShopButton(cog=self, pass_row=0, pass_interaction=interaction),
-        b.OpenStatsButton(_row=0), 
-        b.OpenSettingsButton(_row=0),
-        b.BuyTicketButton(_row=1, _label="Quick Buy 1", _custom_id="buy-one-ticket"),
-        b.QuitButton(_row=1)
+        b.OpenShopButton(cog=self, pass_row=0),
+        b.OpenStatsButton(cog=self, pass_row=0), 
+        b.OpenSettingsButton(cog=self, pass_row=0),
+        b.BuyTicketButton(cog=self, pass_row=1, label="Quick Buy 1"),
+        b.QuitButton(cog=self, pass_row=1)
         }
 
         embed = Embed(color=Colour.random(), title="Welcome to the Lottery", type='rich', url=None, description="Enjoy the stay!")
@@ -51,8 +50,9 @@ class AdminCommands(Cog):
         pfp = member.display_avatar
         view = v.ShopMenu()
         buttons = {
-        b.BuyTicketButton(_row=0, _label="Buy 1", _custom_id="buy-one-ticket"),
-        b.OpenMainMenuButton(_row=2)
+        b.BuyTicketButton(cog=self, pass_row=0, label="Buy 1"),
+        b.OpenMainMenuButton(cog=self, pass_row=1),
+        b.QuitButton(cog=self, pass_row=2)
         }
 
         embed = Embed(color=Colour.random(), title="What can I do for you?", type='rich', url=None, description="500 for 1")

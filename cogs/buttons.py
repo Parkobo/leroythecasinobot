@@ -12,81 +12,79 @@ class CheckerButton(Button):
         
 # ( + ) Main Menu Buttons ( + ) # 
 class OpenStatsButton(Button):
-    def __init__(self, *args, _row, **kwargs):
-        label="My Stats"
-        emoji="📚"
-        style=nextcord.ButtonStyle.blurple
-        custom_id="open-stats"
-        row=_row
+    def __init__(self: Button, *args, cog, pass_row, **kwargs):
+        label = "My Stats"
+        emoji = "📚"
+        style = nextcord.ButtonStyle.blurple
+        row = pass_row
+        self.cog = cog
 
-        super().__init__(*args, label=label, emoji=emoji, style=style, row=row, custom_id=custom_id, **kwargs)
+        super().__init__(*args, label=label, emoji=emoji, style=style, row=row, **kwargs)
 
     async def button_callback(self, interaction: Interaction):
         pass
 
 class OpenShopButton(Button):
-    def __init__(self: Button, *args, cog, pass_row, pass_interaction: Interaction, **kwargs):
-        label="Ticket Shop"
-        emoji="🏪"
-        style=nextcord.ButtonStyle.green
-        custom_id="open-shop"
-        row=pass_row
-        self.cog=cog
-        self.interact = pass_interaction
+    def __init__(self: Button, *args, cog, pass_row, **kwargs):
+        label = "Ticket Shop"
+        emoji = "🏪"
+        style = nextcord.ButtonStyle.green
+        row = pass_row
+        self.cog = cog
 
-        super().__init__(*args, label=label, emoji=emoji, style=style, row=row, custom_id=custom_id, **kwargs)
+        super().__init__(*args, label=label, emoji=emoji, style=style, row=row, **kwargs)
 
     async def callback(self, interaction: Interaction):
         await self.cog.shop()
 
 class OpenSettingsButton(Button):
-    def __init__(self, *args, _row, **kwargs):
-        label="Settings"
-        emoji="⚙️"
-        style=nextcord.ButtonStyle.gray
-        row=_row
-        custom_id="open-settings"
+    def __init__(self: Button, *args, cog, pass_row, **kwargs):
+        label = "Settings"
+        emoji = "⚙️"
+        style = nextcord.ButtonStyle.gray
+        row = pass_row
+        self.cog = cog
         
-        super().__init__(*args, label=label, emoji=emoji, style=style, row=row, custom_id=custom_id, **kwargs)
+        super().__init__(*args, label=label, emoji=emoji, style=style, row=row, **kwargs)
 
     async def button_callback(self, interaction: Interaction):
         pass
 
 class OpenMainMenuButton(Button):
-    def __init__(self, *args, _row, **kwargs):
-        label="Main Menu"
-        emoji="💻"
-        style=nextcord.ButtonStyle.primary
-        row=_row
-        custom_id="open-main"
+    def __init__(self: Button, *args, cog, pass_row, **kwargs):
+        label = "Main Menu"
+        emoji = "💻"
+        style = nextcord.ButtonStyle.primary
+        row = pass_row
+        self.cog = cog
         
-        super().__init__(*args, label=label, emoji=emoji, style=style, row=row, custom_id=custom_id, **kwargs)
+        super().__init__(*args, label=label, emoji=emoji, style=style, row=row, **kwargs)
 
     async def button_callback(self, interaction: Interaction):
         await interaction.response.defer()
 
 class QuitButton(Button):
-    def __init__(self, *args, _row, **kwargs):
-        label="QUIT"
-        emoji="🛑"
-        style=nextcord.ButtonStyle.danger
-        row=_row
-        custom_id="quit"
+    def __init__(self: Button, *args, cog, pass_row, **kwargs):
+        label = "QUIT"
+        emoji = "🛑"
+        style = nextcord.ButtonStyle.danger
+        row = pass_row
+        self.cog = cog
         
-        super().__init__(*args, label=label, emoji=emoji, style=style, row=row, custom_id=custom_id, **kwargs)
+        super().__init__(*args, label=label, emoji=emoji, style=style, row=row, **kwargs)
 
     async def button_callback(self, interaction: Interaction):
         pass
 
 class BuyTicketButton(Button):
-    def __init__(self, *args, _row, _label, _custom_id, **kwargs):
-        label =_label
-        emoji ="🎟️"
-        row =_row
+    def __init__(self: Button, *args, cog, pass_row, label, **kwargs):
+        label = label
+        emoji = "🎟️"
         style = nextcord.ButtonStyle.green
-        custom_id=_custom_id
+        row = pass_row
+        self.cog = cog
         
-        super().__init__(*args, label=label, emoji=emoji, style=style, row=row, custom_id=custom_id, **kwargs)
+        super().__init__(*args, label=label, emoji=emoji, style=style, row=row, **kwargs)
 
     async def callback(self, interaction: Interaction):
         pass

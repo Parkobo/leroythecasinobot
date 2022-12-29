@@ -9,7 +9,7 @@ import os
 dotenv.load_dotenv("secrets.env")
 
 # Grab the cluster connection key for connecting to a cloud MongoDB
-cluster = str(os.getenv("cluster"))
+cluster = str(os.getenv("DATABASE"))
 
 # Create a new db_client object using the MongoClient type (which serves as a driver for interacting with data in the cloud database)
 db_client = MongoClient(cluster)
@@ -69,15 +69,21 @@ async def create_player(pass_msg: Interaction):
         await pass_msg.send(f'**You already have an account <@{d_id}> !**')
     return False
 
-def read_player():
+async def read_player(pass_msg: Interaction):
+    d_id = pass_msg.user.id
+    pd = player_data.find_one( { "Discord ID": d_id } )
+    if pd is not None:
+        return pd
+    else:
+        await pass_msg.send(f'**You do not have an account! Please use the /register command to register your account <@{d_id}> !**')
+    
+async def update_player():
     pass
 
-def update_player():
-    pass
-
-def delete_player():
+async def delete_player():
     pass
 
 # Non-Direct Database Helpers #
-def get_max_tickets_player_can_buy():
+async def get_max_tickets_player_can_buy():
     pass
+

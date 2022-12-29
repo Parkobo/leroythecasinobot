@@ -5,6 +5,7 @@ from . import modals as m
 from main_bot_logic import bot
 from nextcord.ext import commands
 from nextcord.ext.commands import Cog
+import data_methods as db
 import nextcord
 
 intents = nextcord.Intents.all()
@@ -132,9 +133,15 @@ class AdminCommands(Cog):
 
     async def download(self):
         pass
-
-    async def purchase(self):
-        pass
+    
+    async def purchase(self, interaction: Interaction):
+        player = await db.read_player(pass_msg=self.interaction)
+        
+        # print(player.get('Discord ID'))
+        buy = m.BuyModal()
+        await interaction.response.send_modal(buy)
+        
+        
 
 def setup(bot): # this is called by Pycord to setup the cog
     bot.add_cog(AdminCommands(bot, interaction=None)) # add the cog to the bot

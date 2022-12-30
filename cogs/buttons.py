@@ -16,7 +16,7 @@ class CheckerButton(Button):
         super().__init__(*args, label=label, emoji=emoji, style=style, row=row, **kwargs)
 
     async def callback(self, interaction: Interaction):
-        await self.cog.purchase()
+        await self.cog.purchase(interaction, self.cog)
         
 # ( + ) Main Menu Buttons ( + ) # 
 class OpenShopButton(Button):
@@ -83,6 +83,19 @@ class QuitButton(Button):
 
     async def callback(self, interaction: Interaction):
         await self.cog.quit()
+
+class OkayButton(Button):
+    def __init__(self: Button, *args, cog, pass_row, **kwargs):
+        label = "OK"
+        emoji = "✔️"
+        style = nextcord.ButtonStyle.green
+        row = pass_row
+        self.cog = cog
+        
+        super().__init__(*args, label=label, emoji=emoji, style=style, row=row, **kwargs)
+
+    async def callback(self, interaction: Interaction):
+        await self.cog.main_window()
 
 class BuyTicketButton(Button):
     def __init__(self: Button, *args, cog, pass_row, **kwargs):

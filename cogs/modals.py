@@ -1,48 +1,39 @@
 import nextcord
 import data_methods as crud
-from nextcord.ui import TextInput, Modal
+from nextcord.ui import TextInput as TxtBx, Modal
+import data_methods as db
 
-# class BuyModal(Modal, title='<*> I T E M - S H O P <*>'):
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-        
-#         tickets = TxtBx(label="How many tickets would you like to purchase?", placeholder=f"You can purchase {max_items} tickets")
-#         powerups = TxtBx(label="How many powerup tokens would you like to purhcase?")
+class BuyModal(Modal):
+    def __init__(self, *args, player: dict, cog, **kwargs):
+        self.title = "<*> I T E M - S H O P <*>"
+        self.player = player
+        self.cog = cog
+        super().__init__(*args, title=self.title, **kwargs)
 
-#     async def callback(self, interaction: discord.Interaction):
-#         embed = discord.Embed(title="Modal Results")
-#         embed.add_field(name="Short Input", value=self.children[0].value)
-#         await interaction.response.send_message(embeds=[embed])
+        self.tickets = TxtBx(label="Ticket Amount To Buy", placeholder=f"You can purchase {self.max_items} tickets", required=True)
+        self.add_item(self.tickets)
+        self.powerups = TxtBx(label="Powerup Amount To Buy", placeholder=f"You can purchase {self.max_items} powerups", required=True)
+        self.add_item(self.powerups)
 
-
-
-
-
-# class Pet(nextcord.ui.Modal):
-#     def __init__(self):
-#         super().__init__("Your pet")  # Modal title
-
-#         # Create a text input and add it to the modal
-#         self.name = nextcord.ui.TextInput(
-#             label="Your pet's name",
-#             min_length=2,
-#             max_length=50,
-#         )
-#         self.add_item(self.name)
-
-#         # Create a long text input and add it to the modal
-#         self.description = nextcord.ui.TextInput(
-#             label="Description",
-#             style=nextcord.TextInputStyle.paragraph,
-#             placeholder="Information that can help us recognise your pet",
-#             required=False,
-#             max_length=1800,
-#         )
-#         self.add_item(self.description)
-
-#     async def callback(self, interaction: nextcord.Interaction) -> None:
-#         """This is the function that gets called when the submit button is pressed"""
-#         response = f"{interaction.user.mention}'s favourite pet's name is {self.name.value}."
-#         if self.description.value != "":
-#             response += f"\nTheir pet can be recognized by this information:\n{self.description.value}"
-#         await interaction.send(response)
+    async def callback(self, interaction: nextcord.Interaction):
+        t = int(self.tickets.value)
+        p = int(self.powerups.value)
+        sum = t + p
+        if (t > 0 or p > 0):
+            if ((t <= self.max_items and p <= self.max_items) and sum <= self.max_items):
+                await db.update_player(player=self.player, tickets=t, powerups=p)
+                if t > 0 and p > 0:
+                    await interaction.send(f"{t} tickets and {p} powerups added to your account for {sum*500}!", ephemeral=True)
+                    await self.cog.shop()
+                elif t <= 0 and p > 0:
+                    await interaction.send(f"{p} powerups added to your account for {sum*500}!", ephemeral=True)
+                    await self.cog.shop()
+                else:
+                    await interaction.send(f"{t} tickets added to your account for {sum*500}!", ephemeral=True)
+                    await self.cog.shop()
+            else:
+                await interaction.send("You do not have the necessary funds to make this purchase.", ephemeral=True)
+                await self.cog.main_window()
+        else:
+            await interaction.send("No items were in your cart during your purchase.", ephemeral=True)
+            await self.cog.main_window()

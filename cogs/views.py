@@ -32,3 +32,11 @@ class SettingsMenu(View): # Create a MainMenu View, serves as player main menu w
 
     async def interaction_check(self, interaction: Interaction) -> bool:
         return True
+
+class AlertWindow(View): # Create a MainMenu View, serves as player main menu with the bot.
+    def __init__(self: View):
+        super().__init__()
+        self.value = None
+
+    async def interaction_check(self, interaction: Interaction) -> bool:
+        return True

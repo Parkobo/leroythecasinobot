@@ -36,13 +36,13 @@ class AdminCommands(Cog):
         b.QuitButton(cog=self, pass_row=1)
         }
 
+        for button in buttons:
+            view.add_item(button)
+
         embed = Embed(color=Colour.random(), title="Welcome to the Lottery", type='rich', url=None, description="Enjoy the stay!")
         embed.set_author(name=f"Good to see you {self.name}", icon_url='https://cdn-icons-png.flaticon.com/512/217/217853.png')
         embed.set_image(url="https://art.ngfiles.com/images/2722000/2722505_pixelheadache_animated-wallpaper.gif?f1662611959")
         embed.set_thumbnail(url=f"{self.pfp}")
-
-        for button in buttons:
-            view.add_item(button)
 
         msg = await interaction.response.send_message(embed=embed, view=view)
         res = await view.wait()
@@ -57,13 +57,14 @@ class AdminCommands(Cog):
         b.QuitButton(cog=self, pass_row=2)
         }
 
+        for button in buttons:
+            view.add_item(button)
+
         embed = Embed(color=Colour.random(), title="What can I do for you?", type='rich', url=None, description="500 for 1")
         embed.set_author(name=f"You could win {self.name}!", icon_url='https://cdn-icons-png.flaticon.com/512/217/217853.png')
         embed.set_image(url="https://art.ngfiles.com/images/2722000/2722505_pixelheadache_animated-wallpaper.gif?f1662611959")
         embed.set_thumbnail(url=f"{self.pfp}")
 
-        for button in buttons:
-            view.add_item(button)
         await self.interaction.edit_original_message(embed=embed, view=view)
 
     async def stats(self):
@@ -74,13 +75,14 @@ class AdminCommands(Cog):
         b.QuitButton(cog=self, pass_row=2)
         }
 
+        for button in buttons:
+            view.add_item(button)
+
         embed = Embed(color=Colour.random(), title="STATS", type='rich', url=None, description="500 for 1")
         embed.set_author(name=f"You could win {self.name}!", icon_url='https://cdn-icons-png.flaticon.com/512/217/217853.png')
         embed.set_image(url="https://art.ngfiles.com/images/2722000/2722505_pixelheadache_animated-wallpaper.gif?f1662611959")
         embed.set_thumbnail(url=f"{self.pfp}")
 
-        for button in buttons:
-            view.add_item(button)
         await self.interaction.edit_original_message(embed=embed, view=view)
 
     async def settings(self):
@@ -91,13 +93,14 @@ class AdminCommands(Cog):
         b.QuitButton(cog=self, pass_row=2)
         }
 
+        for button in buttons:
+            view.add_item(button)
+
         embed = Embed(color=Colour.random(), title="SETTINGS", type='rich', url=None, description="500 for 1")
         embed.set_author(name=f"You could win {self.name}!", icon_url='https://cdn-icons-png.flaticon.com/512/217/217853.png')
         embed.set_image(url="https://art.ngfiles.com/images/2722000/2722505_pixelheadache_animated-wallpaper.gif?f1662611959")
         embed.set_thumbnail(url=f"{self.pfp}")
 
-        for button in buttons:
-            view.add_item(button)
         await self.interaction.edit_original_message(embed=embed, view=view)
 
     async def main_window(self):
@@ -110,22 +113,20 @@ class AdminCommands(Cog):
         b.QuitButton(cog=self, pass_row=1)
         }
 
+        for button in buttons:
+            view.add_item(button)
+
         embed = Embed(color=Colour.random(), title="Welcome to the Lottery", type='rich', url=None, description="Enjoy the stay!")
         embed.set_author(name=f"Good to see you {self.name}", icon_url='https://cdn-icons-png.flaticon.com/512/217/217853.png')
         embed.set_image(url="https://art.ngfiles.com/images/2722000/2722505_pixelheadache_animated-wallpaper.gif?f1662611959")
         embed.set_thumbnail(url=f"{self.pfp}")
 
-        for button in buttons:
-            view.add_item(button)
         await self.interaction.edit_original_message(embed=embed, view=view)
 
     async def buy_ticket(self):
         pass
-
+    
     async def quit(self):
-        pass
-
-    async def buy_ticket(self):
         pass
 
     async def edit_name(self):
@@ -133,15 +134,28 @@ class AdminCommands(Cog):
 
     async def download(self):
         pass
-    
-    async def purchase(self, interaction: Interaction):
+
+    async def alert(self):
+        view = v.AlertWindow()
+        view.add_item(b.OkayButton(cog=self, pass_row=0))
+
+        embed = Embed(color=Colour.dark_red, title="ALERT", type='rich', url=None, description="You do not have enough funds to purchase any items from the shop at this time.")
+        embed.set_image(url="https://64.media.tumblr.com/8d0620c4919bc5b9fa8b36dd9106a0ab/tumblr_n0zrp2SNo61rpfk7eo1_500.gif")
+        embed.set_thumbnail(url=f"{self.pfp}")
+
+        await self.interaction.edit_original_message(embed=embed, view=view)
+
+    async def purchase(self, interaction: Interaction, cog):
+        self.cog = cog
         player = await db.read_player(pass_msg=self.interaction)
-        
-        # print(player.get('Discord ID'))
-        buy = m.BuyModal()
-        await interaction.response.send_modal(buy)
-        
-        
+
+        funds = player.get('Funds')
+        max_items = funds // 500
+        if max_items > 0:
+            buy = m.BuyModal(player=player, cog=self.cog)
+            await interaction.response.send_modal(modal=buy)
+        else:
+            await self.alert()
 
 def setup(bot): # this is called by Pycord to setup the cog
     bot.add_cog(AdminCommands(bot, interaction=None)) # add the cog to the bot

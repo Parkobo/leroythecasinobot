@@ -77,9 +77,21 @@ async def read_player(pass_msg: Interaction):
     else:
         await pass_msg.send(f'**You do not have an account! Please use the /register command to register your account <@{d_id}> !**')
     
-async def update_player():
-    pass
-
+async def update_player(player: dict, tickets, powerups):
+    d_id = player.get('Discord ID')
+    cost = (tickets + powerups)*500
+    player_data.update_one(
+    { "Discord ID": d_id },
+    { "$inc": 
+        {
+        "Funds": -abs(cost),
+        "Tickets Bought": tickets,
+        "Current Tickets Count": tickets,
+        "Powerups Bought": powerups,
+        "Current Powerups Count": powerups
+        }
+    })
+    
 async def delete_player():
     pass
 

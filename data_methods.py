@@ -42,6 +42,12 @@ async def create_player(pass_msg: Interaction):
                 "Total Winnings": 0,
                 # Total amount of money lost by the player in the lottery in their lifetime
                 "Total Losses": 0,
+                # Total amount of money withdrawn successfully by the player
+                "Total Cashed Out": 0,
+                # Total cash out requests made in the last day
+                "Cashout Requests Made Today": 0,
+                # Total amount of money paid in fees by the player in their lifetime
+                "Total Fees Paid": 0,
                 # Number of times a player has participated in the lottery -- participation is using at least > 0 tickets.
                 "Attempts": 0,
                 # Total number of tickets bought by the player in their lifetime
@@ -50,6 +56,8 @@ async def create_player(pass_msg: Interaction):
                 "Tickets Used": 0,
                 # Total number of tickets gifted from this player to other players
                 "Tickets Gifted": 0,
+                # Items donated in the current 24 hour window starting from the first donation
+                "Items Donated Today": 0,
                 # Total number of tickets received from other players gifting them
                 "Tickets Received": 0,
                 # Current balance of tickets in the 'wallet' of the player
@@ -60,6 +68,10 @@ async def create_player(pass_msg: Interaction):
                 "Powerups Used": 0,
                 # Current balance of powerups in the 'wallet' of the player
                 "Current Powerups Count": 0,
+                # Time since the last cash out of the first series of cash outs was made -- applies to cash out fees
+                "Cash Out Period": date,
+                # 24 hour donation period starting from the first donation in a period
+                "Donation Period": date,
                 # The exact date and time of the player registering their account -- in case they leave or need records for something like logging
                 "Joined": date,
         })
@@ -100,3 +112,12 @@ async def update_player_cash(player: dict, funds):
         }
     })
 
+async def update_player_name(player: dict, name):
+    d_id = player.get('Discord ID')
+    player_data.update_one(
+    { "Discord ID": d_id },
+    { "$set":
+        {
+        "Player Name": name
+        }
+    })

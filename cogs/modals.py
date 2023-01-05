@@ -65,3 +65,25 @@ class CashOutModal(Modal):
                 await interaction.send("Your request exceeds the funds in your wallet!", ephemeral=True)
         except ValueError:
             await interaction.send("Please enter a proper **INTEGER** whole values for cash withdrawl!", ephemeral=True)
+
+class ChangeNameModal(Modal):
+    def __init__(self, *args, player: dict, cog, **kwargs):
+        self.title = "<*> C H A N G E - N A M E <*>"
+        self.player = player
+        self.cog = cog
+        super().__init__(*args, title=self.title, **kwargs)
+
+        self.name = TxtBx(label="What would you like your name to be?", placeholder=f"Names can only have letters, no spaces, and be 20 or less characters!", required=True)
+        self.add_item(self.name)
+
+    async def callback(self, interaction: nextcord.Interaction):
+        c = str(self.name.value)
+        try:
+            if (c.isalpha() and len(c) < 20):
+                await db.update_player_name(player=self.player, name=c)
+                await interaction.send(f"You have changed your account name to {c} successfully!", ephemeral=True)
+                await self.cog.main_window()
+            else:
+                await interaction.send(f"The given name is incorrect. Your name should ONLY contain letters and be 20 characters or less!", ephemeral=True)
+        except ValueError:
+            await interaction.send("Please enter **LETTERS** for a name, and no other characters!", ephemeral=True)

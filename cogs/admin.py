@@ -39,11 +39,12 @@ class AdminCommands(Cog):
 
             view = v.MainMenu()
             buttons = {
-            b.OpenShopButton(cog=self, pass_row=0, disabled_flag=self.disabled),
-            b.OpenStatsButton(cog=self, pass_row=0),
-            b.OpenSettingsButton(cog=self, pass_row=0),
-            b.BuyTicketButton(cog=self, pass_row=1, disabled_flag=self.disabled),
-            b.QuitButton(cog=self, pass_row=1)
+                b.OpenShopButton(cog=self, pass_row=0, disabled_flag=self.disabled),
+                b.BuyTicketButton(cog=self, pass_row=0, disabled_flag=self.disabled),
+                b.OpenInventoryButton(cog=self, pass_row=1),
+                b.OpenStatsButton(cog=self, pass_row=1),
+                b.OpenSettingsButton(cog=self, pass_row=1),
+                b.QuitButton(cog=self, pass_row=2)
             }
 
             for button in buttons:
@@ -61,11 +62,11 @@ class AdminCommands(Cog):
             await interaction.response.send_message(f"You are not registered <@{interaction.user.id}>! Please use the **/register** command to get registered for the lottery!")
 
     async def shop(self):
+        player = await db.read_player(pass_msg=self.interaction)
+        name=player.get("Player Name")
         view = v.ShopMenu()
         buttons = {
         b.CheckerButton(cog=self, pass_row=0),
-        b.CashOut(cog=self, pass_row=1),
-        # b.DonateTickets(cog=self, pass_row=1),
         b.OpenMainMenuButton(cog=self, pass_row=2),
         b.QuitButton(cog=self, pass_row=3)
         }
@@ -74,7 +75,7 @@ class AdminCommands(Cog):
             view.add_item(button)
 
         embed = Embed(color=Colour.random(), title=e(":package: ITEMS"), type='rich', url=None, description=e(":ticket: Ticket = $500\n:secret: Powerup = $500\n:wavy_dash:"))
-        embed.set_author(name=f"How can I be of assistance {self.name}?", icon_url='https://cdn-icons-png.flaticon.com/512/217/217853.png')
+        embed.set_author(name=f"How can I be of assistance {name}?", icon_url='https://cdn-icons-png.flaticon.com/512/217/217853.png')
         embed.set_image(url="https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/12cbe8a4-f55c-4b40-85bb-d8e1405e7b84/d98qb8z-56df9d2f-1a24-41d4-ad7d-e4244cc189be.gif?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcLzEyY2JlOGE0LWY1NWMtNGI0MC04NWJiLWQ4ZTE0MDVlN2I4NFwvZDk4cWI4ei01NmRmOWQyZi0xYTI0LTQxZDQtYWQ3ZC1lNDI0NGNjMTg5YmUuZ2lmIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.Nd7Pghx-n6PtcGxt3q1iXKcSmh0AlSH0jkMzXViaWqE")
         embed.set_thumbnail(url=f"{self.pfp}")
         embed.add_field(
@@ -97,7 +98,7 @@ class AdminCommands(Cog):
         powerup_money_spent = int(player.get("Powerups Bought")*500)
         view = v.StatsMenu()
         buttons = {
-        # b.DownloadPlayerStatsButton(cog=self, pass_row=0),
+        b.DownloadPlayerStatsButton(cog=self, pass_row=0),
         b.OpenMainMenuButton(cog=self, pass_row=1),
         b.QuitButton(cog=self, pass_row=2)
         }
@@ -149,6 +150,8 @@ class AdminCommands(Cog):
         await self.interaction.edit_original_message(embed=embed, view=view)
 
     async def settings(self):
+        player = await db.read_player(pass_msg=self.interaction)
+        name=player.get("Player Name")
         view = v.SettingsMenu()
         buttons = {
         b.EditPlayerNameButton(cog=self, pass_row=0),
@@ -160,7 +163,7 @@ class AdminCommands(Cog):
             view.add_item(button)
 
         embed = Embed(color=Colour.random(), title="SETTINGS", type='rich', url=None, description="500 for 1")
-        embed.set_author(name=f"You could win {self.name}!", icon_url='https://cdn-icons-png.flaticon.com/512/217/217853.png')
+        embed.set_author(name=f"You could win {name}!", icon_url='https://cdn-icons-png.flaticon.com/512/217/217853.png')
         embed.set_image(url="https://64.media.tumblr.com/0be6dd3b9a8624c8b0ed47deec5f39fd/tumblr_o9w9bfjRiY1vyuxeno1_1280.gif")
         embed.set_thumbnail(url=f"{self.pfp}")
 
@@ -168,6 +171,7 @@ class AdminCommands(Cog):
 
     async def main_window(self):
         player = await db.read_player(pass_msg=self.interaction)
+        name=player.get("Player Name")
         funds = player.get('Funds')
         self.max_items = funds // 500
         self.disabled = False
@@ -177,21 +181,81 @@ class AdminCommands(Cog):
 
         view = v.MainMenu()
         buttons = {
-        b.OpenShopButton(cog=self, pass_row=0, disabled_flag=self.disabled),
-        b.OpenStatsButton(cog=self, pass_row=0),
-        b.OpenSettingsButton(cog=self, pass_row=0),
-        b.BuyTicketButton(cog=self, pass_row=1, disabled_flag=self.disabled),
-        b.QuitButton(cog=self, pass_row=1)
+            b.OpenShopButton(cog=self, pass_row=0, disabled_flag=self.disabled),
+            b.BuyTicketButton(cog=self, pass_row=0, disabled_flag=self.disabled),
+            b.OpenInventoryButton(cog=self, pass_row=1),
+            b.OpenStatsButton(cog=self, pass_row=1),
+            b.OpenSettingsButton(cog=self, pass_row=1),
+            b.QuitButton(cog=self, pass_row=2)
         }
 
         for button in buttons:
             view.add_item(button)
 
         embed = Embed(color=Colour.random(), title="Welcome to the Lottery", type='rich', url=None, description="Enjoy the stay!")
-        embed.set_author(name=f"Good to see you {self.name}", icon_url='https://cdn-icons-png.flaticon.com/512/217/217853.png')
+        embed.set_author(name=f"Good to see you {name}", icon_url='https://cdn-icons-png.flaticon.com/512/217/217853.png')
         embed.set_image(url="https://art.ngfiles.com/images/2722000/2722505_pixelheadache_animated-wallpaper.gif?f1662611959")
         embed.set_thumbnail(url=f"{self.pfp}")
 
+        await self.interaction.edit_original_message(embed=embed, view=view)
+
+    async def inventory(self):
+        player = await db.read_player(pass_msg=self.interaction)
+        funds = int(player.get("Funds"))
+        tickets = int(player.get("Current Tickets Count"))
+        powerups = int(player.get("Current Powerups Count"))
+        total_worth = funds + ((tickets + powerups)*500)
+        donations = int(player.get("Tickets Gifted"))
+        cash_out_total = int(player.get("Total Cashed Out"))
+        fees = int(player.get("Total Fees Paid"))
+        view = v.Inventory()
+        buttons = {
+        b.CashOut(cog=self, pass_row=0),
+        b.DonateTickets(cog=self, pass_row=0),
+        b.OpenMainMenuButton(cog=self, pass_row=1),
+        b.QuitButton(cog=self, pass_row=2)
+        }
+
+        for button in buttons:
+            view.add_item(button)
+
+        embed = Embed(color=Colour.random())
+        embed.set_author(name=f"Your Assets Total Worth : ${total_worth}", icon_url='https://media.tenor.com/k-PfH9O4EpcAAAAj/money-cash.gif')
+        embed.set_image(url="https://www.icegif.com/wp-content/uploads/2022/03/icegif-83.gif")
+        embed.set_thumbnail(url=f"{self.pfp}")
+        embed.add_field(
+            name=e("🏦 CASH OUT INFORMATION:"),
+            value=e(
+                f"""+ You can cash out 50% -> 100% of your wallet per request\n
+                + Cash outs are completed in city in bulk, check for related announcements\n
+                + Funds are delivered via wire transfer in city\n
+                + Funds are returned to your account NOT INCLUDING fees paid if funds are not collected in city within a week of the first request\n
+                + You have unlimited cash out requests, however, a fee applies after the first cash out within 24 hours:\n
+                + Fees only apply to the amount requested for that specific withdrawl, and not the total requested of all combined cash outs\n
+                :arrow_right:1st Time -> Free\n
+                :arrow_right:2nd Time -> 15% Fee On Amount\n
+                :arrow_right:3rd Time -> 35% Fee On Amount\n
+                :arrow_right:4th Time -> 55% Fee On Amount\n
+                :arrow_right:5+ Times -> 70% Fee On Amount\n
+                :wavy_dash:"""),
+            inline=False)
+        embed.add_field(
+            name=e("💝 DONATION INFORMATION:"),
+            value=e(
+                f"""+ You can donate 5,000 items a day to other users\n
+                + Donations of items come at a small fee of 20% of the item's total value\n
+                + Donation fees are non-refundable\n
+                + Donation milestones in the form of discord roles are available\n
+                :arrow_right:100 Donations -> Gifter\n
+                :arrow_right:500 Donations -> Charitable\n
+                :arrow_right:1,000 Donations -> Benevolent\n
+                :arrow_right:4,000 Donations -> Donation Jockey\n
+                :arrow_right:10,000 -> Donation Chief\n
+                :arrow_right:75,000 -> Golden Caretaker\n
+                :arrow_right:150,000 -> Philanthropist\n
+                :arrow_right:250,000+ -> Miracle Worker"""),
+            inline=False)
+        embed.set_footer(text=e(f"Total donated items: {donations}\nTotal cash withdrawn successfully: ${cash_out_total}\nTotal fees paid: ${fees}"))
         await self.interaction.edit_original_message(embed=embed, view=view)
 
     async def buy_ticket(self):
@@ -208,11 +272,11 @@ class AdminCommands(Cog):
         await self.msg.delete()
         await self.interaction.send("Thanks for stopping by!", ephemeral=True)
 
-    async def edit_name(self):
-        pass
-
-    async def download(self):
-        pass
+    async def edit_name(self, interaction: Interaction, cog):
+        self.cog = cog
+        player = await db.read_player(pass_msg=self.interaction)
+        name_modal = m.ChangeNameModal(player=player, cog=self.cog)
+        await interaction.response.send_modal(modal=name_modal)
 
     async def cash_out(self, interaction: Interaction, cog):
         self.cog = cog
@@ -227,18 +291,11 @@ class AdminCommands(Cog):
             await self.alert_cash_out()
     
     async def quick_cash_out(self, interaction: Interaction, player, funds):
-        await db.update_player(player=player, funds=funds)
+        await db.update_player_cash(player=player, funds=funds)
         await interaction.response.send_message(f"You have successfully cashed out ${funds}!", ephemeral=True)
 
     async def donate(self):
-        player = await db.read_player(pass_msg=self.interaction)
-        funds = player.get('Funds')
-        self.max_items = funds // 500
-        if self.max_items > 0:
-            await db.update_player(player=player, tickets=1, powerups=0)
-            await self.interaction.send("One ticket purchased!", ephemeral=True)
-        else:
-            await self.alert()
+        pass
 
     async def alert(self):
         view = v.AlertWindow()

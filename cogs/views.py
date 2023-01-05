@@ -48,3 +48,11 @@ class AlertCashOutWindow(View):
 
     async def interaction_check(self, interaction: Interaction) -> bool:
         return True
+
+class Inventory(View):
+    def __init__(self: View):
+        super().__init__()
+        self.value = None
+
+    async def interaction_check(self, interaction: Interaction) -> bool:
+        return True

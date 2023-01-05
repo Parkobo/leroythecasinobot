@@ -1,7 +1,7 @@
 from nextcord import Interaction
 from nextcord.ui import View
 
-class MainMenu(View): # Create a MainMenu View, serves as player main menu with the bot.
+class MainMenu(View):
     def __init__(self: View):
         super().__init__()
         self.value = None
@@ -9,7 +9,7 @@ class MainMenu(View): # Create a MainMenu View, serves as player main menu with 
     async def interaction_check(self, interaction: Interaction) -> bool:
         return True
 
-class ShopMenu(View): # Create a MainMenu View, serves as player main menu with the bot.
+class ShopMenu(View):
     def __init__(self: View):
         super().__init__()
         self.value = None
@@ -17,7 +17,7 @@ class ShopMenu(View): # Create a MainMenu View, serves as player main menu with 
     async def interaction_check(self, interaction: Interaction) -> bool:
         return True
 
-class StatsMenu(View): # Create a MainMenu View, serves as player main menu with the bot.
+class StatsMenu(View):
     def __init__(self: View):
         super().__init__()
         self.value = None
@@ -25,7 +25,7 @@ class StatsMenu(View): # Create a MainMenu View, serves as player main menu with
     async def interaction_check(self, interaction: Interaction) -> bool:
         return True
 
-class SettingsMenu(View): # Create a MainMenu View, serves as player main menu with the bot.
+class SettingsMenu(View):
     def __init__(self: View):
         super().__init__()
         self.value = None
@@ -33,7 +33,15 @@ class SettingsMenu(View): # Create a MainMenu View, serves as player main menu w
     async def interaction_check(self, interaction: Interaction) -> bool:
         return True
 
-class AlertWindow(View): # Create a MainMenu View, serves as player main menu with the bot.
+class AlertWindow(View):
+    def __init__(self: View):
+        super().__init__()
+        self.value = None
+
+    async def interaction_check(self, interaction: Interaction) -> bool:
+        return True
+
+class AlertCashOutWindow(View):
     def __init__(self: View):
         super().__init__()
         self.value = None

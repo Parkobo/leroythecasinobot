@@ -2,38 +2,66 @@ import nextcord
 import data_methods as crud
 from nextcord.ui import TextInput as TxtBx, Modal
 import data_methods as db
+import math
 
 class BuyModal(Modal):
-    def __init__(self, *args, player: dict, cog, **kwargs):
+    def __init__(self, *args, player: dict, cog, max, **kwargs):
         self.title = "<*> I T E M - S H O P <*>"
         self.player = player
         self.cog = cog
+        self.max = max
         super().__init__(*args, title=self.title, **kwargs)
 
-        self.tickets = TxtBx(label="Ticket Amount To Buy", placeholder=f"You can purchase {self.max_items} tickets", required=True)
+        self.tickets = TxtBx(label="Ticket Amount To Buy", placeholder=f"You can purchase {self.max} tickets or powerups", required=True)
         self.add_item(self.tickets)
-        self.powerups = TxtBx(label="Powerup Amount To Buy", placeholder=f"You can purchase {self.max_items} powerups", required=True)
+        self.powerups = TxtBx(label="Powerup Amount To Buy", placeholder=f"You can purchase {self.max} tickets or powerups", required=True)
         self.add_item(self.powerups)
 
     async def callback(self, interaction: nextcord.Interaction):
-        t = int(self.tickets.value)
-        p = int(self.powerups.value)
-        sum = t + p
-        if (t > 0 or p > 0):
-            if ((t <= self.max_items and p <= self.max_items) and sum <= self.max_items):
-                await db.update_player(player=self.player, tickets=t, powerups=p)
-                if t > 0 and p > 0:
-                    await interaction.send(f"{t} tickets and {p} powerups added to your account for {sum*500}!", ephemeral=True)
-                    await self.cog.shop()
-                elif t <= 0 and p > 0:
-                    await interaction.send(f"{p} powerups added to your account for {sum*500}!", ephemeral=True)
-                    await self.cog.shop()
+        try:
+            t = int(self.tickets.value)
+            p = int(self.powerups.value)
+            sum = t + p
+            if (t > 0 or p > 0):
+                if ((t <= self.max and p <= self.max) and sum <= self.max):
+                    await db.update_player(player=self.player, tickets=t, powerups=p)
+                    if t > 0 and p > 0:
+                        await interaction.send(f"{t} tickets and {p} powerups added to your account for {sum*500}!", ephemeral=True)
+                    elif t <= 0 and p > 0:
+                        await interaction.send(f"{p} powerups added to your account for {sum*500}!", ephemeral=True)
+                    else:
+                        await interaction.send(f"{t} tickets added to your account for {sum*500}!", ephemeral=True)
                 else:
-                    await interaction.send(f"{t} tickets added to your account for {sum*500}!", ephemeral=True)
-                    await self.cog.shop()
+                    await interaction.send("You do not have the necessary funds to make this purchase.", ephemeral=True)
+                    await self.cog.main_window()
             else:
-                await interaction.send("You do not have the necessary funds to make this purchase.", ephemeral=True)
+                await interaction.send("No items were in your cart during your purchase.", ephemeral=True)
                 await self.cog.main_window()
-        else:
-            await interaction.send("No items were in your cart during your purchase.", ephemeral=True)
-            await self.cog.main_window()
+
+        except ValueError:
+            await interaction.send("Please enter a proper **INTEGER** amount of items to purchase", ephemeral=True)
+
+class CashOutModal(Modal):
+    def __init__(self, *args, player: dict, cog, funds, **kwargs):
+        self.title = "<*> C A S H - O U T <*>"
+        self.player = player
+        self.cog = cog
+        self.funds = funds
+        self.min = math.trunc(funds / 2)
+        super().__init__(*args, title=self.title, **kwargs)
+
+        self.cash = TxtBx(label="Amount to cash out of the game", placeholder=f"You can cash out a minimum of ${self.min} up to ${self.funds}", required=True)
+        self.add_item(self.cash)
+
+    async def callback(self, interaction: nextcord.Interaction):
+        c = int(self.cash.value)
+        try:
+            if (c >= self.min and c <= self.funds):
+                await db.update_player_cash(player=self.player, funds=c)
+                await interaction.send(f"You requested to cashed out ${c} successfully!", ephemeral=True)
+            elif (c <= self.min):
+                await interaction.send("Your cash out request is too low, you must withdraw half or more of your total funding!", ephemeral=True)
+            else:
+                await interaction.send("Your request exceeds the funds in your wallet!", ephemeral=True)
+        except ValueError:
+            await interaction.send("Please enter a proper **INTEGER** whole values for cash withdrawl!", ephemeral=True)

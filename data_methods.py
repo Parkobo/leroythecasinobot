@@ -70,12 +70,10 @@ async def create_player(pass_msg: Interaction):
     return False
 
 async def read_player(pass_msg: Interaction):
-    d_id = pass_msg.user.id
-    pd = player_data.find_one( { "Discord ID": d_id } )
+    pd = player_data.find_one( { "Discord ID": pass_msg.user.id } )
     if pd is not None:
         return pd
-    else:
-        await pass_msg.send(f'**You do not have an account! Please use the /register command to register your account <@{d_id}> !**')
+    return pd
     
 async def update_player(player: dict, tickets, powerups):
     d_id = player.get('Discord ID')
@@ -92,10 +90,13 @@ async def update_player(player: dict, tickets, powerups):
         }
     })
     
-async def delete_player():
-    pass
-
-# Non-Direct Database Helpers #
-async def get_max_tickets_player_can_buy():
-    pass
+async def update_player_cash(player: dict, funds):
+    d_id = player.get('Discord ID')
+    player_data.update_one(
+    { "Discord ID": d_id },
+    { "$inc":
+        {
+        "Funds": -abs(funds)
+        }
+    })
 

@@ -35,4 +35,5 @@ async def on_ready():
     print(f"We have logged in as {bot.user}")
 
 # Start the bot 
+
 bot.run(token)

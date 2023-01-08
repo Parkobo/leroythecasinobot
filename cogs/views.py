@@ -56,3 +56,11 @@ class Inventory(View):
 
     async def interaction_check(self, interaction: Interaction) -> bool:
         return True
+
+class Arrows(View):
+    def __init__(self: View):
+        super().__init__()
+        self.value = None
+
+    async def interaction_check(self, interaction: Interaction) -> bool:
+        return True

@@ -19,10 +19,10 @@ db = db_client.lottery_bot
 
 # Set the database collections to their respective variables
 player_data = db.player_data
-admin_data = db.admin_data
+cash_out_data = db.cash_out_members
 
 # Create. Read. Update. Delete. #
-async def create_player(pass_msg: Interaction):
+async def create_player(pass_msg: Interaction, uid):
     d_id = pass_msg.user.id
     check_d_id = player_data.find_one( { "Discord ID": d_id } )
     if check_d_id is None:
@@ -34,6 +34,8 @@ async def create_player(pass_msg: Interaction):
                 "Discord ID": d_id,
                 # Name of the player given at registration
                 "Player Name": p_na,
+                # Player's in city UID from GTA
+                "Player UID": uid,
                 # Current standing total funds a player has in their account
                 "Funds": 1000,
                 # Number of times a player has won the lottery in their lifetime
@@ -101,18 +103,8 @@ async def update_player(player: dict, tickets, powerups):
         "Current Powerups Count": powerups
         }
     })
-    
-async def update_player_cash(player: dict, funds):
-    d_id = player.get('Discord ID')
-    player_data.update_one(
-    { "Discord ID": d_id },
-    { "$inc":
-        {
-        "Funds": -abs(funds)
-        }
-    })
 
-async def update_player_name(player: dict, name):
+async def update_player_name(player, name):
     d_id = player.get('Discord ID')
     player_data.update_one(
     { "Discord ID": d_id },
@@ -121,3 +113,54 @@ async def update_player_name(player: dict, name):
         "Player Name": name
         }
     })
+    
+async def update_player_cash(player: dict, funds):
+    d_id = player.get('Discord ID')
+    cod = cash_out_data.find_one( { "Discord ID": d_id } )
+    
+    if cod is None:
+        await add_cash_out(player=player, d_id=d_id)
+    else:
+        await update_cash_out(player=player, d_id=d_id, funds=funds)
+
+    player_data.update_one(
+    { "Discord ID": d_id },
+    { "$inc":
+        {
+        "Funds": -abs(funds)
+        }
+    })
+
+# Method for creating a collection of cash out requests from players in the game
+async def add_cash_out(player, d_id):
+    date = dt.now()
+    uid = player.get("Player UID")
+    cash_out_data.insert_one(
+        {
+            # Their true discord ID to make sure the user is not being nefarious
+            "Discord ID": d_id,
+            # Player's in city UID from GTA
+            "Player UID": uid,
+            # Funds requested by the player
+            "Requested Funds": 0,
+            # Used to mark when the first request was made for automation
+            "First Request Date": date,
+        })
+
+# Updating the request fields
+async def update_cash_out(player, d_id, funds):
+    cash_out_data.update_one(
+    { "Discord ID": d_id },
+    { "$inc":
+        {
+        "Requested Funds": abs(funds),
+        }
+    })
+    return True
+
+async def read_cash_out():
+    return list(cash_out_data.find().sort([("Player UID", 1), ("Discord ID", 1)]))
+
+async def clear_cash_out(collection):
+    for item in collection:
+        list(cash_out_data.find().sort( { "Player UID": 1, "Discord ID": 1 } ))

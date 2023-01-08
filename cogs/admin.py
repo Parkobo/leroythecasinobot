@@ -21,54 +21,77 @@ class AdminCommands(Cog):
         self.name = None
         self.pfp = None
 
-    @bot.slash_command(description="Open the lottery application.")
-    async def main_menu(self, interaction: Interaction):
-        player = await db.read_player(pass_msg=interaction)
-        if player is not None:
-            self.interaction = interaction
-            self.member = interaction.user
-            self.name = interaction.user.display_name
-            self.pfp = interaction.user.display_avatar
-            
-            funds = player.get('Funds')
-            self.max_items = funds // 500
-            self.disabled = False
+    def is_me(self, m):
+        return m.author == self.bot.user
 
-            if self.max_items <= 0:
-                self.disabled = True
-
-            view = v.MainMenu()
-            buttons = {
-                b.OpenShopButton(cog=self, pass_row=0, disabled_flag=self.disabled),
-                b.BuyTicketButton(cog=self, pass_row=0, disabled_flag=self.disabled),
-                b.OpenInventoryButton(cog=self, pass_row=1),
-                b.OpenStatsButton(cog=self, pass_row=1),
-                b.OpenSettingsButton(cog=self, pass_row=1),
-                b.QuitButton(cog=self, pass_row=2)
-            }
-
-            for button in buttons:
-                view.add_item(button)
-
-            embed = Embed(color=Colour.random(), title="Welcome to the Lottery", type='rich', url=None, description="Enjoy the stay!")
-            embed.set_image(url="https://art.ngfiles.com/images/2722000/2722505_pixelheadache_animated-wallpaper.gif?f1662611959")
-            embed.set_thumbnail(url=f"{self.pfp}")
-
-            self.msg = await interaction.response.send_message(embed=embed, view=view)
-            res = await view.wait()
-            if res:
-                await self.msg.delete()
+    @bot.slash_command(description="Create a personal channel for the lottery menu.")
+    async def lottery(self, interaction: Interaction):
+        unique_channel_name = interaction.user.name.lower() + "s-menu"
+        channel = nextcord.utils.get(interaction.guild.text_channels, name=unique_channel_name)
+        if interaction.channel.name != 'bot_commands':
+            await interaction.response.send_message(f"You must use this command in #bot_commands", ephemeral=True)
+        elif channel is not None:
+            await interaction.response.send_message(f"A channel called **{channel.name}** already exists for you!", ephemeral=True)
+            await channel.send(f"Here is your channel <@{interaction.user.id}>! Use the **/main_menu** command to call the menu!")
         else:
-            await interaction.response.send_message(f"You are not registered <@{interaction.user.id}>! Please use the **/register** command to get registered for the lottery!")
+            overwrites = {
+                interaction.guild.default_role: nextcord.PermissionOverwrite(read_messages=False),
+                interaction.guild.get_member(interaction.user.id): nextcord.PermissionOverwrite(read_messages=True)
+            }
+            channel_name = 'lottery'
+            category = nextcord.utils.get(interaction.guild.categories, name=channel_name)
+            channel = await interaction.guild.create_text_channel(unique_channel_name, overwrites=overwrites, category=category)
+
+    @bot.slash_command(description="Open the lottery main menu.")
+    async def main_menu(self, interaction: Interaction):
+            unique_channel_name = interaction.user.name.lower() + "s-menu"
+            if interaction.channel.name != unique_channel_name:
+                await interaction.response.send_message(f"You must use this command in a personal lottery channel. Please first use the **/lottery** command to create your channel!", ephemeral=True)
+            else:
+                await interaction.channel.purge(check=self.is_me)
+                player = await db.read_player(pass_msg=interaction)
+                if player is not None:
+                    self.interaction = interaction
+                    self.member = interaction.user
+                    self.name = interaction.user.display_name
+                    self.pfp = interaction.user.display_avatar
+                    
+                    funds = player.get('Funds')
+                    self.max_items = funds // 500
+                    self.disabled = False
+
+                    if self.max_items <= 0:
+                        self.disabled = True
+
+                    view = v.MainMenu()
+                    buttons = {
+                        b.OpenShopButton(cog=self, pass_row=0, disabled_flag=self.disabled, interaction=self.interaction),
+                        b.BuyTicketButton(cog=self, pass_row=0, disabled_flag=self.disabled, interaction=self.interaction),
+                        b.OpenInventoryButton(cog=self, pass_row=1, interaction=self.interaction),
+                        b.OpenStatsButton(cog=self, pass_row=1, interaction=self.interaction),
+                        b.OpenSettingsButton(cog=self, pass_row=1, interaction=self.interaction),
+                        b.QuitButton(cog=self, pass_row=2, interaction=self.interaction)
+                    }
+
+                    for button in buttons:
+                        view.add_item(button)
+
+                    embed = Embed(color=Colour.random(), title="Welcome to the Lottery", type='rich', url=None, description="Enjoy the stay!")
+                    embed.set_image(url="https://art.ngfiles.com/images/2722000/2722505_pixelheadache_animated-wallpaper.gif?f1662611959")
+                    embed.set_thumbnail(url=f"{self.pfp}")
+
+                    self.msg = await interaction.response.send_message(embed=embed, view=view)
+                else:
+                    await interaction.response.send_message(f"You are not registered <@{interaction.user.id}>! Please use the **/register** command to get registered for the lottery!", ephemeral=True)
 
     async def shop(self):
         player = await db.read_player(pass_msg=self.interaction)
         name=player.get("Player Name")
         view = v.ShopMenu()
         buttons = {
-        b.CheckerButton(cog=self, pass_row=0),
-        b.OpenMainMenuButton(cog=self, pass_row=2),
-        b.QuitButton(cog=self, pass_row=3)
+            b.CheckerButton(cog=self, pass_row=0, interaction=self.interaction),
+            b.OpenMainMenuButton(cog=self, pass_row=2, interaction=self.interaction),
+            b.QuitButton(cog=self, pass_row=3, interaction=self.interaction)
         }
 
         for button in buttons:
@@ -98,9 +121,8 @@ class AdminCommands(Cog):
         powerup_money_spent = int(player.get("Powerups Bought")*500)
         view = v.StatsMenu()
         buttons = {
-        b.DownloadPlayerStatsButton(cog=self, pass_row=0),
-        b.OpenMainMenuButton(cog=self, pass_row=1),
-        b.QuitButton(cog=self, pass_row=2)
+        b.OpenMainMenuButton(cog=self, pass_row=1, interaction=self.interaction),
+        b.QuitButton(cog=self, pass_row=2, interaction=self.interaction)
         }
 
         for button in buttons:
@@ -115,35 +137,35 @@ class AdminCommands(Cog):
         embed.add_field(
             name=e(":green_book: MONETARY DATA:"),
             value=e(
-                f""":accept::chart_with_upwards_trend: Lifetime Winnings -> ${player.get('Total Winnings')}\n
-                :accept::chart_with_downwards_trend: Lifetime Losses -> ${player.get('Total Winnings')}\n
-                :accept::file_folder: Lifetime Revenue -> ${total_revenue}\n
-                :accept::dollar: Total Spent On Tickets -> ${ticket_money_spent}\n
+                f""":accept::chart_with_upwards_trend: Lifetime Winnings -> ${player.get('Total Winnings')}
+                :accept::chart_with_downwards_trend: Lifetime Losses -> ${player.get('Total Winnings')}
+                :accept::file_folder: Lifetime Revenue -> ${total_revenue}
+                :accept::dollar: Total Spent On Tickets -> ${ticket_money_spent}
                 :accept::pound: Total Spent On Powerups -> ${powerup_money_spent}
                 :wavy_dash:"""),
             inline=False)
         embed.add_field(
             name=e(":closed_book: TICKET DATA:"),
             value=e(
-                f""":ticket::one: Tickets Bought -> {player.get('Tickets Bought')}\n
-                :ticket::two: Tickets Used -> {player.get('Tickets Used')}\n
-                :ticket::three: Tickets Gifted -> {player.get('Tickets Gifted')}\n
-                :ticket::four: Tickets Received -> {player.get('Tickets Received')}\n
+                f""":ticket::one: Tickets Bought -> {player.get('Tickets Bought')}
+                :ticket::two: Tickets Used -> {player.get('Tickets Used')}
+                :ticket::three: Tickets Gifted -> {player.get('Tickets Gifted')}
+                :ticket::four: Tickets Received -> {player.get('Tickets Received')}
                 :ticket::five: Current Tickets Count -> {player.get('Current Tickets Count')}
                 :wavy_dash:"""),
             inline=False)
         embed.add_field(
             name=e(":orange_book: POWERUP DATA:"),
             value=e(
-                f""":secret::one: Powerups Bought -> {player.get('Powerups Bought')}\n
-                :secret::two: Powerups Used -> {player.get('Powerups Used')}\n
+                f""":secret::one: Powerups Bought -> {player.get('Powerups Bought')}
+                :secret::two: Powerups Used -> {player.get('Powerups Used')}
                 :secret::five: Current Powerups Count -> {player.get('Current Powerups Count')}
                 :wavy_dash:"""),
             inline=False)
         embed.add_field(
             name=e(":blue_book: LOTTERY DATA:"),
             value=e(
-                f""":slot_machine::one: Win Count -> {player.get('Lottery Win Count')}\n
+                f""":slot_machine::one: Win Count -> {player.get('Lottery Win Count')}
                 :slot_machine::two: Lotteries Attempted -> {player.get('Attempts')}:wavy_dash:"""),
             inline=False)
         embed.set_footer(text=e(f"Joined on {player.get('Joined')}"))
@@ -154,9 +176,9 @@ class AdminCommands(Cog):
         name=player.get("Player Name")
         view = v.SettingsMenu()
         buttons = {
-        b.EditPlayerNameButton(cog=self, pass_row=0),
-        b.OpenMainMenuButton(cog=self, pass_row=1),
-        b.QuitButton(cog=self, pass_row=2)
+        b.EditPlayerNameButton(cog=self, pass_row=0, interaction=self.interaction),
+        b.OpenMainMenuButton(cog=self, pass_row=1, interaction=self.interaction),
+        b.QuitButton(cog=self, pass_row=2, interaction=self.interaction)
         }
 
         for button in buttons:
@@ -181,12 +203,12 @@ class AdminCommands(Cog):
 
         view = v.MainMenu()
         buttons = {
-            b.OpenShopButton(cog=self, pass_row=0, disabled_flag=self.disabled),
-            b.BuyTicketButton(cog=self, pass_row=0, disabled_flag=self.disabled),
-            b.OpenInventoryButton(cog=self, pass_row=1),
-            b.OpenStatsButton(cog=self, pass_row=1),
-            b.OpenSettingsButton(cog=self, pass_row=1),
-            b.QuitButton(cog=self, pass_row=2)
+            b.OpenShopButton(cog=self, pass_row=0, disabled_flag=self.disabled, interaction=self.interaction),
+            b.BuyTicketButton(cog=self, pass_row=0, disabled_flag=self.disabled, interaction=self.interaction),
+            b.OpenInventoryButton(cog=self, pass_row=1, interaction=self.interaction),
+            b.OpenStatsButton(cog=self, pass_row=1, interaction=self.interaction),
+            b.OpenSettingsButton(cog=self, pass_row=1, interaction=self.interaction),
+            b.QuitButton(cog=self, pass_row=2, interaction=self.interaction)
         }
 
         for button in buttons:
@@ -210,10 +232,10 @@ class AdminCommands(Cog):
         fees = int(player.get("Total Fees Paid"))
         view = v.Inventory()
         buttons = {
-        b.CashOut(cog=self, pass_row=0),
-        b.DonateTickets(cog=self, pass_row=0),
-        b.OpenMainMenuButton(cog=self, pass_row=1),
-        b.QuitButton(cog=self, pass_row=2)
+        b.CashOut(cog=self, pass_row=0, interaction=self.interaction),
+        b.DonateTickets(cog=self, pass_row=0, interaction=self.interaction),
+        b.OpenMainMenuButton(cog=self, pass_row=1, interaction=self.interaction),
+        b.QuitButton(cog=self, pass_row=2, interaction=self.interaction)
         }
 
         for button in buttons:
@@ -232,11 +254,11 @@ class AdminCommands(Cog):
                 + Funds are returned to your account NOT INCLUDING fees paid if funds are not collected in city within a week of the first request\n
                 + You have unlimited cash out requests, however, a fee applies after the first cash out within 24 hours:\n
                 + Fees only apply to the amount requested for that specific withdrawl, and not the total requested of all combined cash outs\n
-                :arrow_right:1st Time -> Free\n
-                :arrow_right:2nd Time -> 15% Fee On Amount\n
-                :arrow_right:3rd Time -> 35% Fee On Amount\n
-                :arrow_right:4th Time -> 55% Fee On Amount\n
-                :arrow_right:5+ Times -> 70% Fee On Amount\n
+                :arrow_right:1st Time -> Free
+                :arrow_right:2nd Time -> 15% Fee On Amount
+                :arrow_right:3rd Time -> 35% Fee On Amount
+                :arrow_right:4th Time -> 55% Fee On Amount
+                :arrow_right:5+ Times -> 70% Fee On Amount
                 :wavy_dash:"""),
             inline=False)
         embed.add_field(
@@ -246,13 +268,13 @@ class AdminCommands(Cog):
                 + Donations of items come at a small fee of 20% of the item's total value\n
                 + Donation fees are non-refundable\n
                 + Donation milestones in the form of discord roles are available\n
-                :arrow_right:100 Donations -> Gifter\n
-                :arrow_right:500 Donations -> Charitable\n
-                :arrow_right:1,000 Donations -> Benevolent\n
-                :arrow_right:4,000 Donations -> Donation Jockey\n
-                :arrow_right:10,000 -> Donation Chief\n
-                :arrow_right:75,000 -> Golden Caretaker\n
-                :arrow_right:150,000 -> Philanthropist\n
+                :arrow_right:100 Donations -> Gifter
+                :arrow_right:500 Donations -> Charitable
+                :arrow_right:1,000 Donations -> Benevolent
+                :arrow_right:4,000 Donations -> Donation Jockey
+                :arrow_right:10,000 -> Donation Chief
+                :arrow_right:75,000 -> Golden Caretaker
+                :arrow_right:150,000 -> Philanthropist
                 :arrow_right:250,000+ -> Miracle Worker"""),
             inline=False)
         embed.set_footer(text=e(f"Total donated items: {donations}\nTotal cash withdrawn successfully: ${cash_out_total}\nTotal fees paid: ${fees}"))
@@ -299,7 +321,7 @@ class AdminCommands(Cog):
 
     async def alert(self):
         view = v.AlertWindow()
-        view.add_item(b.OkayButton(cog=self, pass_row=0))
+        view.add_item(b.OkayButton(cog=self, pass_row=0, interaction=self.interaction))
 
         embed = Embed(color=Colour.random(), title="ALERT", type='rich', url=None, description="You do not have enough funds to purchase any items from the shop at this time.")
         embed.set_image(url="https://64.media.tumblr.com/8d0620c4919bc5b9fa8b36dd9106a0ab/tumblr_n0zrp2SNo61rpfk7eo1_500.gif")
@@ -309,7 +331,7 @@ class AdminCommands(Cog):
 
     async def alert_cash_out(self):
         view = v.AlertCashOutWindow()
-        view.add_item(b.OkayButton(cog=self, pass_row=0))
+        view.add_item(b.OkayButton(cog=self, pass_row=0), interaction=self.interaction)
 
         embed = Embed(color=Colour.random(), title="ALERT", type='rich', url=None, description="You have no funds to withdraw at this time!")
         embed.set_image(url="https://64.media.tumblr.com/8d0620c4919bc5b9fa8b36dd9106a0ab/tumblr_n0zrp2SNo61rpfk7eo1_500.gif")

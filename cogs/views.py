@@ -1,7 +1,6 @@
-from nextcord import Interaction, Button
+from nextcord import Interaction
 from nextcord.ui import View
 from . import buttons as b
-import nextcord
 
 class MainMenu(View):
     def __init__(self: View, cog, timeout, disabled_flag, interaction):

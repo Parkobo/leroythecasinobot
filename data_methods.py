@@ -1,6 +1,5 @@
 from datetime import datetime as dt
 from pymongo import MongoClient
-import nextcord
 from nextcord import Interaction
 import dotenv
 import os

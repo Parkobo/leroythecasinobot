@@ -1,9 +1,6 @@
 import nextcord
 from nextcord import Interaction
-from . import modals as m
 from nextcord.ui import Button
-from . import admin as a
-from emoji import emojize as e
 
 # ( + ) Lottery Shop Modal Stuff ( + ) #
 class CheckerButton(Button):

@@ -1,21 +1,5 @@
-from nextcord import Colour, Embed, Interaction
-from . import buttons as b
-from . import views as v
-from . import modals as m
-from main_bot_logic import bot
-from nextcord.ext import commands
-from nextcord.ext.commands import Cog
-import data_methods as db
-import nextcord
 from emoji import emojize as e
-from nextcord.ext import commands, application_checks
-import data_methods as db
-import nextcord
-from . import views as v
-from . import buttons as b
-from nextcord.ext.commands import Cog
-from nextcord import Colour, Embed, Interaction
-from emoji import emojize as e
+from nextcord import Colour, Embed
 
 async def main_embed(pfp):
     embed = Embed(color=Colour.random(), title="Welcome to the Lottery", type='rich', url=None, description="Enjoy the stay!")

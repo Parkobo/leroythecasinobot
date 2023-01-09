@@ -1,5 +1,4 @@
 import nextcord
-import data_methods as crud
 from nextcord.ui import TextInput as TxtBx, Modal
 import data_methods as db
 import math

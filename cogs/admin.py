@@ -1,11 +1,12 @@
 import nextcord
-import data_methods as db
-from emoji import emojize as e
-from main_bot_logic import bot
+from nextcord import Interaction
 from nextcord.ext import commands
 from nextcord.ext.commands import Cog
-from nextcord import Colour, Embed, Interaction
-from . import buttons as b, modals as m, views as v, embeds as em
+import data_methods as db
+from main_bot_logic import bot
+from . import embeds as em
+from . import modals as m
+from . import views as v
 
 intents = nextcord.Intents.all()
 intents.message_content = True

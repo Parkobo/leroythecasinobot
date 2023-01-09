@@ -18,11 +18,11 @@ class UserActions(Cog): # Create a class for our cog that inherits from commands
         self.interaction = interaction
 
     @bot.slash_command()
-    async def register(self, message: Interaction, uid: int):
-        if uid <= 99999:
-            await db.create_player(pass_msg=message, uid=uid)
+    async def register(self, interaction: Interaction, uid: int):
+        if uid <= 99999 and uid > 0:
+            await db.create_player(pass_msg=interaction, uid=uid)
         else:
-            await message.response.send_message("The UID entered is too long, please enter a shorter UID value!")
+            await interaction.response.send_message("The UID value must be shorter than 6 digits and non-negative, please try the **/register** command again!", ephemeral=True)
 
     @bot.slash_command()
     # @application_checks.has_role('Admin') 

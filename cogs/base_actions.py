@@ -7,17 +7,19 @@ from main_bot_logic import bot
 from . import embeds as em
 from . import modals as m
 from . import views as v
+from . import buttons as b
 
 intents = nextcord.Intents.all()
 intents.message_content = True
 bot = commands.Bot(intents = intents)
 
-class AdminCommands(Cog):
+class BaseCommands(Cog):
     def __init__(self, bot, interaction: Interaction):
         self.bot = bot
         self.interaction = interaction
         self.pfp = None
         self.timeout = 180.0
+        self.main_view = None
 
     def is_me(self, m):
         return m.author == self.bot.user
@@ -28,15 +30,13 @@ class AdminCommands(Cog):
             self.timeout = shop_time * 60
             unique_channel_name = interaction.user.name.lower() + 's-menu'
             channel = nextcord.utils.get(interaction.guild.text_channels, name=unique_channel_name)
-            
             if interaction.channel.name != 'bot_commands':
                 await interaction.response.send_message(f"You must use this command in #bot_commands", ephemeral = True)
             elif channel is not None:
                 await interaction.response.send_message(f"A channel called **{channel.name}** already exists for you!", ephemeral = True)
-                await channel.send(f"Here is your channel <@{interaction.user.id}>! Use the **/main_menu** command to call the menu!", ephemeral = True)
+                await channel.send(f"Here is your channel <@{interaction.user.id}>! Use the **/main_menu** command to call the menu!")
             else:
-                channel_name = 'lottery'
-                category = nextcord.utils.get(interaction.guild.categories, name = channel_name)
+                category = nextcord.utils.get(interaction.guild.categories, name = 'lottery')
                 overwrites = {
                     interaction.guild.default_role: nextcord.PermissionOverwrite(read_messages = False),
                     interaction.guild.get_member(interaction.user.id): nextcord.PermissionOverwrite(read_messages = True)
@@ -46,7 +46,8 @@ class AdminCommands(Cog):
                     overwrites = overwrites,
                     category = category
                     )
-                await channel.send(f"Here is your channel <@{interaction.user.id}>! Use the **/main_menu** command to call the menu!", ephemeral = True)
+                await interaction.response.send_message(f"A channel called **{channel.name}** was created for you!", ephemeral = True)
+                await channel.send(f"Here is your channel <@{interaction.user.id}>! Use the **/main_menu** command to call the menu!")
         else:
             await interaction.response.send_message("The time given must be 10 minutes or less and non-negative, please try the **/lottery** command again!", ephemeral = True)
 
@@ -62,12 +63,8 @@ class AdminCommands(Cog):
                 self.interaction = interaction
                 self.pfp = interaction.user.display_avatar
                 max_items = player.get('Funds') // 500
-                
-                disabled = False
-                if max_items <= 0:
-                    disabled = True
-                    
-                main_view = v.MainMenu(
+                disabled = True if max_items <= 0 else False
+                self.main_view = v.MainMenu(
                     cog = self,
                     timeout = self.timeout,
                     disabled_flag = disabled,
@@ -75,9 +72,9 @@ class AdminCommands(Cog):
                     )
                 self.msg = await interaction.response.send_message(
                     embed = await em.main_embed(self.pfp), 
-                    view = main_view
+                    view = self.main_view
                     )
-                res = await main_view.wait()
+                res = await self.main_view.wait()
                 if res:
                     try:
                         await self.quit()
@@ -88,33 +85,43 @@ class AdminCommands(Cog):
     
     async def main_window(self):
         player = await db.read_player(pass_msg = self.interaction)
+        self.main_view.clear_items()
         max_items = player.get('Funds') // 500
-
-        disabled = False
         if max_items <= 0:
-            disabled = True
+            buttons = await self.apply_main_buttons(True)
+            for button in buttons:
+                self.main_view.add_item(button)
+        else:
+            buttons = await self.apply_main_buttons(False)
+            for button in buttons:
+                self.main_view.add_item(button)
 
-        main_view = v.MainMenu(
-            cog = self,
-            timeout = None,
-            disabled_flag = disabled,
-            interaction = self.interaction
-            )
         await self.interaction.edit_original_message(
             embed = await em.main_embed(self.pfp), 
-            view = main_view
+            view = self.main_view
             )
+
+    async def apply_main_buttons(self, disabled):
+        buttons = {
+            b.OpenShopButton(cog=self, pass_row=0, disabled_flag=disabled, interaction=self.interaction),
+            b.BuyTicketButton(cog=self, pass_row=0, disabled_flag=disabled, interaction=self.interaction),
+            b.OpenInventoryButton(cog=self, pass_row=1, interaction=self.interaction),
+            b.OpenStatsButton(cog=self, pass_row=1, interaction=self.interaction),
+            b.OpenSettingsButton(cog=self, pass_row=1, interaction=self.interaction),
+            b.QuitButton(cog=self, pass_row=2, interaction=self.interaction)
+            }
+        return buttons
 
     async def shop(self):
         player_name = (await db.read_player(pass_msg = self.interaction)).get("Player Name")
         shop_view = v.ShopMenu(
             cog = self,
             interaction = self.interaction
-        )
+            )
         await self.interaction.edit_original_message(
             embed = await em.shop_embed(self.pfp, player_name), 
             view = shop_view
-        )
+            )
 
     async def stats(self):
         player = await db.read_player(pass_msg = self.interaction)
@@ -168,27 +175,28 @@ class AdminCommands(Cog):
             modal = m.ChangeNameModal(
                 player = player,
                 cog = cog
-            ))
+                ))
 
     async def cash_out(self, interaction: Interaction, cog):
         player = await db.read_player(pass_msg = self.interaction)
         funds = int(player.get('Funds'))
         if funds > 0 and funds < 500:
             await self.quick_cash_out(interaction, player, funds)
+            await self.cog.main_window()
         elif funds > 0:
             await interaction.response.send_modal(
                 modal = m.CashOutModal(
                     player = player,
                     cog = cog,
                     funds = funds
-                ))
+                    ))
         else:
             await self.alert_cash_out()
     
     async def quick_cash_out(self, interaction: Interaction, player, funds):
         await db.update_player_cash(player = player, funds = funds)
         await interaction.response.send_message(f"You have successfully cashed out ${funds}!", ephemeral = True)
-
+        
     async def donate(self):
         pass
 
@@ -221,9 +229,9 @@ class AdminCommands(Cog):
                     player = player,
                     cog = cog,
                     max = max_items
-                ))
+                    ))
         else:
             await self.alert()
 
 def setup(bot): # this is called by Pycord to setup the cog
-    bot.add_cog(AdminCommands(bot, interaction=None)) # add the cog to the bot
+    bot.add_cog(BaseCommands(bot, interaction=None)) # add the cog to the bot

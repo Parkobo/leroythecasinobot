@@ -22,7 +22,7 @@ logger.addHandler(handler)
 
 # Get all cogs into the bot for use of categorized commands
 cogs_list = [
-    'cogs.admin',
+    'cogs.base_actions',
     'cogs.user_actions',
 ]
 

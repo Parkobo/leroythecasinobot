@@ -84,7 +84,7 @@ class AlertWindow(View):
                 cog = self.cog,
                 pass_row = 0, 
                 interaction = self.interaction
-            ))
+                ))
     async def interaction_check(self, interaction: Interaction) -> bool:
         return True
 

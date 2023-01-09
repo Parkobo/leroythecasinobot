@@ -58,6 +58,7 @@ class CashOutModal(Modal):
             if (c >= self.min and c <= self.funds):
                 await db.update_player_cash(player=self.player, funds=c)
                 await interaction.send(f"You requested to cashed out ${c} successfully!", ephemeral=True)
+                await self.cog.main_window()
             elif (c <= self.min):
                 await interaction.send("Your cash out request is too low, you must withdraw half or more of your total funding!", ephemeral=True)
             else:
